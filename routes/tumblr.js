@@ -15,7 +15,7 @@ tumblrRouter.route('/posts').get(function(req, res) {
 });
 
 async function getPosts() {
-  blogName = 'nickduck.tumblr.com';
+  blogName = 'beyniminkustuklari.tumblr.com';
 
   let limit = 50;
   let offset = 0;
@@ -49,10 +49,12 @@ async function getPosts() {
   } while (currentData['_links']);
 
   if (tracks.length > 0) {
-    spotifyHelper.getTracks(tracks.join(','));
-  }
 
-  return tracks;
+
+    let spotifyUris = spotifyHelper.getTracks(tracks.join(','));
+
+    return spotifyUris;
+  }
 }
 
 module.exports = tumblrRouter;

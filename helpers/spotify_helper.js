@@ -3,20 +3,21 @@ var axios = require('axios');
 
 const spotify_base_url = 'https://api.spotify.com/v1';
 const token =
-  'Bearer BQBTbQtTZA-CsA52HqeY7XrnHvIlKFs07fjY4Ys0Rz5DhQst1NtbTU77nBDe3Ut5N5B5cxCm6JY-KWXOCOOZYS0nKT217NBySlF4nwgR5-S2_qRIyziN97HhhuZKywGDiU1VKC3GwoHPMIyBCh93mK9gWlrU60sc3HJWoB3RxLUGJ-ztFLLOiKeW85TxxHELMzMmi4XYnnixgg-PUbp1Y3gKufv-ikYqE1GQot-wXCKttZFFJ0-KRZLCCv1Yp6H9ux1Z7m2A8N9TeRxhNEkj3o8q34xMEw';
+  'Bearer BQCxFSNtCxbs-ylondluGleQDs-FZcP-CllxL-73TZhVOWLd994Adw2n6-2uK6DWESQhVVZ-LuDI6O0n4DSm5cgiApxxEuCnt9VYxBuo00SiN4V9oNOvLkaLnq5Zv7EUUq8bVygojcpHBW2a4LzXXEUChM4POgbs1rGSQVT182nWZ8Q7pA2dooMRV4JTyTxDAUJvYScFj6vj_8JbS-AHvEe3Dhcquvrlu0WWaGcHLWNeUScHczSZiLL74owwMtxQgWsQqreMNn4jlMagkSNgglyyV6_PwtBogWM';
 
-function getTracks(trackIds) {
-  return axios
-    .get(`${spotify_base_url}/tracks?ids=${trackIds}`, {
-      headers: {
-        Authorization: token
-      }
-    })
-    .then(data => {
-      console.log(data);
-      return data['data'];
-    })
-    .catch(function(error) {
-      console.log(error);
-    });
-}
+module.exports = {
+  getTracks: function(trackIds) {
+    return axios
+      .get(`${spotify_base_url}/tracks?ids=${trackIds}`, {
+        headers: {
+          Authorization: token
+        }
+      })
+      .then(data => {
+        return data['data']['tracks'];
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  }
+};
