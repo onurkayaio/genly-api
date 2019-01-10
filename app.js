@@ -6,9 +6,9 @@ var spotifyRouter = require('./routes/spotify');
 
 var app = express();
 
-var PORT = 3031;
+var PORT = 8080;
 var HOST_NAME = 'localhost';
-var DATABASE_NAME = 'shoppingList';
+var DATABASE_NAME = 'genly';
 
 mongoose.Promise = global.Promise;
 
