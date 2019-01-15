@@ -6,6 +6,7 @@ var spotifyRouter = express.Router();
 var { arrayChunk } = require('../helpers/helper');
 
 var User = require('../models/user');
+var Blog = require('../models/blog');
 var Playlist = require('../models/playlist');
 var Generated = require('../models/generated');
 
@@ -18,23 +19,23 @@ const error = {
   }
 };
 
-spotifyRouter.route('/me').get(function(req, res) {
+spotifyRouter.route('/me').get(function (req, res) {
   let accessToken = req.headers['x-access-token'];
 
-  if (!accessToken) {
+  if ( !accessToken ) {
     return res.json(error);
   }
 
   return axios
-    .get(`${spotify_base_url}/me`, {
+    .get(`${ spotify_base_url }/me`, {
       headers: {
         Authorization: accessToken
       }
     })
     .then(data => {
       // check user exists, if not add to db.
-      User.findOne({ email: data.data.email }, function(error, item) {
-        if (!item) {
+      User.findOne({ email: data.data.email }, function (error, item) {
+        if ( !item ) {
           var user = new User(data.data);
           user.save();
         }
@@ -42,20 +43,22 @@ spotifyRouter.route('/me').get(function(req, res) {
 
       res.json(data.data);
     })
-    .catch(function(error) {
+    .catch(function (error) {
       res.json(error.response.data);
     });
 });
 
-spotifyRouter.route('/playlist').post(function(req, res) {
+spotifyRouter.route('/playlist').post(function (req, res) {
   let name = req.body.name;
   let description = req.body.description;
   let isPublic = req.body.isPublic;
   let tracks = req.body.tracks;
 
   let accessToken = req.headers['x-access-token'];
+  let blogName = req.query['blogName'];
+  let email = req.query['email'];
 
-  if (!accessToken) {
+  if ( !accessToken || !blogName || !email ) {
     return res.json(error);
   }
 
@@ -64,17 +67,24 @@ spotifyRouter.route('/playlist').post(function(req, res) {
       let uris = tracksToSpotifyUris(tracks);
 
       insertTracksToPlaylist(playlistData['id'], uris, accessToken).then(() => {
-        // User.findOne({ email: email }, function(error, user) {
-        //   if (error) {
-        //     console.log(error);
-        //   }
+        Blog.findOne({ name: blogName }, function (error, blog) {
+          if ( error ) {
+            console.log(error);
+          }
 
-        //   var generated = new Generated();
+          User.findOne({ email: email }, function (error, user) {
+            if ( error ) {
+              console.log(error);
+            }
 
-        //   generated.user = user;
-        //   generated.playlist = playlistData;
-        //   generated.save();
-        // });
+            var generated = new Generated();
+
+            generated.user = user;
+            generated.playlist = playlistData;
+            generated.blog = blog;
+            generated.save();
+          });
+        });
 
         res.json({
           status: 201,
@@ -89,7 +99,7 @@ async function generatePlaylist(name, description, isPublic, accessToken) {
   try {
     return await axios
       .post(
-        `${spotify_base_url}/me/playlists`,
+        `${ spotify_base_url }/me/playlists`,
         JSON.stringify({
           name: name,
           description: description,
@@ -107,7 +117,8 @@ async function generatePlaylist(name, description, isPublic, accessToken) {
 
         return data['data'];
       });
-  } catch (error) {
+  } catch ( error ) {
+    console.log(error);
     return error.response.data;
   }
 }
@@ -118,9 +129,9 @@ async function insertTracksToPlaylist(playlistId, uris, accessToken) {
   for (let elem of chunkedUris) {
     try {
       await axios.post(
-        `${spotify_base_url}/playlists/${playlistId}/tracks/?position=0&uris=${elem.join(
+        `${ spotify_base_url }/playlists/${ playlistId }/tracks/?position=0&uris=${ elem.join(
           ','
-        )}`,
+        ) }`,
         null,
         {
           headers: {
@@ -128,7 +139,7 @@ async function insertTracksToPlaylist(playlistId, uris, accessToken) {
           }
         }
       );
-    } catch (error) {
+    } catch ( error ) {
       return error.response.data;
     }
   }

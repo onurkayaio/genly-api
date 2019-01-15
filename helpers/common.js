@@ -6,9 +6,9 @@ var Song = require('../models/song');
 const spotify_base_url = 'https://api.spotify.com/v1';
 
 module.exports = {
-  getTracks: function(trackIds, accessToken) {
+  getTracks: function (trackIds, accessToken) {
     return axios
-      .get(`${spotify_base_url}/tracks?ids=${trackIds}`, {
+      .get(`${ spotify_base_url }/tracks?ids=${ trackIds }`, {
         headers: {
           Authorization: accessToken
         }
@@ -21,7 +21,7 @@ module.exports = {
 
         return data['data']['tracks'];
       })
-      .catch(function(error) {
+      .catch(function (error) {
         console.log(error);
       });
   }

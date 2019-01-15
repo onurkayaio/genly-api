@@ -10,6 +10,10 @@ var generatedSchema = new Schema(
     playlist: {
       type: Array,
       required: true
+    },
+    blog: {
+      type: Array,
+      required: true
     }
   },
   { collection: 'generateds' }
