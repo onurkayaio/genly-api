@@ -28,9 +28,16 @@ tumblrRouter.route('/posts').get(function (req, res) {
     if ( data.length === 0 || data.status === 422 || data.status === 404 ) {
       res.status(404).json({
         status: 404,
-        message: 'not found post or blog.'
+        message: 'not found blog.'
       });
     } else {
+      if ( data.tracks.length === 0 ) {
+        return res.status(404).json({
+          status: 404,
+          message: 'not found spotify posts.'
+        });
+      }
+
       getTracksByTrackIds(data['tracks'], accessToken).then(value => {
         res.json({
           status: 200,
@@ -40,6 +47,21 @@ tumblrRouter.route('/posts').get(function (req, res) {
           }
         });
       });
+    }
+  });
+});
+
+tumblrRouter.route('/blogs/populars').get(function (req, res) {
+  Blog.aggregate([
+    { '$group': { _id: '$name', count: { $sum: 1 } } },
+    { $sort: { 'count': -1 } },
+    { $limit: 5 }
+
+  ]).exec(function (error, data) {
+    if ( error ) {
+      console.log(error.message);
+    } else {
+      res.json(data);
     }
   });
 });
