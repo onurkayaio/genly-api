@@ -1,5 +1,6 @@
 var express = require('express');
 var axios = require('axios');
+const store = require('./../store');
 
 var { getTracks } = require('../helpers/common');
 var { arrayChunk } = require('../helpers/helper');
@@ -13,8 +14,6 @@ var error = {
   status: 403,
   message: 'access token is required.'
 };
-
-var Blog = require('../models/blog');
 
 tumblrRouter.route('/posts').get(function (req, res) {
   let accessToken = req.headers['x-access-token'];
@@ -52,17 +51,8 @@ tumblrRouter.route('/posts').get(function (req, res) {
 });
 
 tumblrRouter.route('/blogs/populars').get(function (req, res) {
-  Blog.aggregate([
-    { '$group': { _id: '$name', count: { $sum: 1 } } },
-    { $sort: { 'count': -1 } },
-    { $limit: 5 }
-
-  ]).exec(function (error, data) {
-    if ( error ) {
-      console.log(error.message);
-    } else {
-      res.json(data);
-    }
+  store.blogList().then((req, respond) => {
+    res.json(req);
   });
 });
 
@@ -102,16 +92,10 @@ async function prepareTracksByBlogId(blogName) {
           spotifyPostsAsTexts = data['data']['response']['posts']
             .map(
               post =>
-                post['body'] ? post['body'].split('https://open.spotify.com/track/')[1].split(',')[0] : ''
-            ).map(
-              value =>
-                value.substring(0, value.length - 1)
-            ).map(
-              value =>
-                value.split('&')[0]
+                post['trail'][0]['content'] ? (post['trail'][0]['content'].split('https://open.spotify.com/track/')[1] ? post['trail'][0]['content'].split('https://open.spotify.com/track/')[1].split('&')[0] : '') : ''
             ).filter(Boolean);
         } catch ( e ) {
-          let spotifyPostsAsTexts = [];
+          console.log(e.message);
         }
 
         tracks = tracks.concat(spotifyPostsAsTexts);
@@ -119,8 +103,11 @@ async function prepareTracksByBlogId(blogName) {
       });
     } while (currentData['_links']);
 
-    var blog = new Blog(currentData['blog']);
-    blog.save();
+    store.insertBlog(currentData['blog']['name']);
+
+    tracks = tracks.filter(data => {
+      return data.length === 22;
+    });
 
     return {
       tracks: tracks.filter(onlyUnique),
