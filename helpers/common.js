@@ -1,7 +1,4 @@
-var express = require('express');
 var axios = require('axios');
-
-var Song = require('../models/song');
 
 const spotify_base_url = 'https://api.spotify.com/v1';
 
@@ -14,11 +11,6 @@ module.exports = {
         }
       })
       .then(data => {
-        for (let track of data['data']['tracks']) {
-          var song = new Song(track);
-          song.save();
-        }
-
         return data['data']['tracks'];
       })
       .catch(function (error) {

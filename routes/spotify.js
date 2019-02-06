@@ -1,14 +1,10 @@
 var express = require('express');
 var axios = require('axios');
+const store = require('./../store');
 
 var spotifyRouter = express.Router();
 
 var { arrayChunk } = require('../helpers/helper');
-
-var User = require('../models/user');
-var Blog = require('../models/blog');
-var Playlist = require('../models/playlist');
-var Generated = require('../models/generated');
 
 const spotify_base_url = 'https://api.spotify.com/v1';
 
@@ -33,14 +29,6 @@ spotifyRouter.route('/me').get(function (req, res) {
       }
     })
     .then(data => {
-      // check user exists, if not add to db.
-      User.findOne({ email: data.data.email }, function (error, item) {
-        if ( !item ) {
-          var user = new User(data.data);
-          user.save();
-        }
-      });
-
       res.json(data.data);
     })
     .catch(function (error) {
@@ -67,23 +55,14 @@ spotifyRouter.route('/playlist').post(function (req, res) {
       let uris = tracksToSpotifyUris(tracks);
 
       insertTracksToPlaylist(playlistData['id'], uris, accessToken).then(() => {
-        Blog.findOne({ name: blogName }, function (error, blog) {
-          if ( error ) {
-            console.log(error);
-          }
 
-          User.findOne({ email: email }, function (error, user) {
-            if ( error ) {
-              console.log(error);
-            }
-
-            var generated = new Generated();
-
-            generated.user = user;
-            generated.playlist = playlistData;
-            generated.blog = blog;
-            generated.save();
-          });
+        getPlaylistCover(playlistData['id'], accessToken).then(data => {
+          console.log(data);
+          store.insertPlaylist(
+            playlistData['external_urls'].spotify,
+            blogName.split('|')[0].replace(/ /g, ''),
+            data
+          );
         });
 
         res.json({
@@ -93,6 +72,12 @@ spotifyRouter.route('/playlist').post(function (req, res) {
       });
     }
   );
+});
+
+spotifyRouter.route('/playlist/popular').get(function (req, res) {
+  store.getRecentPlaylists().then((value) => {
+    res.json(value);
+  });
 });
 
 async function generatePlaylist(name, description, isPublic, accessToken) {
@@ -112,9 +97,6 @@ async function generatePlaylist(name, description, isPublic, accessToken) {
         }
       )
       .then(data => {
-        var playlist = new Playlist(data['data']);
-        playlist.save();
-
         return data['data'];
       });
   } catch ( error ) {
@@ -145,6 +127,22 @@ async function insertTracksToPlaylist(playlistId, uris, accessToken) {
   }
 
   return;
+}
+
+async function getPlaylistCover(playlistId, accessToken) {
+  return await axios
+    .get(`${ spotify_base_url }/playlists/${ playlistId }/images`, {
+      headers: {
+        Authorization: accessToken
+      }
+    })
+    .then(data => {
+      console.log(data['data'][1]['url'])
+      return data['data'][1]['url'];
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
 }
 
 function tracksToSpotifyUris(tracks) {
