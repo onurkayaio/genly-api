@@ -98,7 +98,19 @@ async function prepareTracksByBlogId(blogName) {
           console.log(e.message);
         }
 
+        let spotifyPostsAsTexts2 = [];
+        try {
+          spotifyPostsAsTexts2 = data['data']['response']['posts']
+            .map(
+              post =>
+                post['trail'][0]['content'] ? (post['trail'][0]['content'].split('https://open.spotify.com/track/')[1] ? post['trail'][0]['content'].split('https://open.spotify.com/track/')[1].split('?')[0] : '') : ''
+            ).filter(Boolean);
+        } catch ( e ) {
+          console.log(e.message);
+        }
+
         tracks = tracks.concat(spotifyPostsAsTexts);
+        tracks = tracks.concat(spotifyPostsAsTexts2);
         tracks = tracks.concat(spotifyPosts);
       });
     } while (currentData['_links']);

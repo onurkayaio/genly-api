@@ -137,8 +137,7 @@ async function getPlaylistCover(playlistId, accessToken) {
       }
     })
     .then(data => {
-      console.log(data['data'][1]['url'])
-      return data['data'][1]['url'];
+      return data['data'][1] ? data['data'][1]['url'] : data['data'][0]['url'];
     })
     .catch(function (error) {
       console.log(error);
