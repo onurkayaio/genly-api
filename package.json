@@ -1,11 +1,11 @@
 {
-  "name": "restful-api-express-mongoose",
+  "name": "genly-api",
   "version": "1.0.0",
-  "description": "Example of a RESTful API built with Node.js, Express.js and Mongoose.",
+  "description": "an api that provides data to genly.",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app"
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
