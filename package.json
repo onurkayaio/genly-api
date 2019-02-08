@@ -20,6 +20,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "body-parser": "^1.14.1",
+    "cors": "^2.8.5",
     "express": "^4.13.3",
     "knex": "^0.14.4",
     "nodeman": "^1.1.2",
