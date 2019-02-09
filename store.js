@@ -16,5 +16,15 @@ module.exports = {
   },
   getRecentPlaylists: function () {
     return knex.raw('select playlistId, blogName, cover from playlists order by created_at desc limit 4');
+  },
+  insertUser: function (username, email, profileUrl, profileImage) {
+    knex('users').insert({
+      username: username,
+      email: email,
+      profileUrl: profileUrl,
+      profileImage: profileImage
+    }).then(function (result) {
+      console.log(result);
+    });
   }
 };

@@ -15,6 +15,32 @@ const error = {
   }
 };
 
+spotifyRouter.route('/login').get(function (req, res) {
+  let accessToken = req.headers['x-access-token'];
+
+  if ( !accessToken ) {
+    return res.json(error);
+  }
+
+  return axios
+    .get(`${ spotify_base_url }/me`, {
+      headers: {
+        Authorization: accessToken
+      }
+    })
+    .then(data => {
+      store.insertUser(
+        data['data']['id'],
+        data['data']['email'],
+        data['data']['external_urls'].spotify,
+        data['data']['images'][0].url
+      );
+    })
+    .catch(function (error) {
+      res.json(error.response.data);
+    });
+});
+
 spotifyRouter.route('/me').get(function (req, res) {
   let accessToken = req.headers['x-access-token'];
 
